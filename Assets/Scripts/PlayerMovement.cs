@@ -1,20 +1,53 @@
+ï»¿using System;
 using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
 {
-    public float speed = 10f;
+    public float speed = 5.0f;
+    [SerializeField] private Rigidbody2D rb;
+    private float horizontalInput;
+    private float verticalInput;
+    Animator animator;
+    bool facingRight = true;
+
+    private void Start()
+    {
+        animator = GetComponent<Animator>();
+    }
+
 
     private void Update()
     {
-        float horizontalInput = Input.GetAxisRaw("Horizontal");
-        float verticalInput = Input.GetAxisRaw("Vertical"); // Pobiera input x i y
-
-        Vector2 movement = new Vector2(horizontalInput, verticalInput);
-
-        if (movement.magnitude > 0.1f) // Magnitude sprawdza czy gracz siê porusza w jakimœ kierunku
+        horizontalInput = Input.GetAxisRaw("Horizontal");
+        if (horizontalInput < 0 && facingRight)
         {
-            movement.Normalize(); // Dziêki temu nawet id¹c po przek¹tnej mamy tak¹ sam¹ szybkoœæ ruchu jak id¹c w bok
-            transform.position += (Vector3)movement * speed * Time.deltaTime; // Nadanie nowej pozycji
+            Flip();
         }
+        if (horizontalInput > 0 && !facingRight)
+        {
+            Flip();
+        }
+        verticalInput = Input.GetAxisRaw("Vertical");
+
+    }
+
+    private void FixedUpdate()
+    {
+        MovePlayer();
+    }
+
+    void MovePlayer()
+    {
+        Vector2 movement = new Vector2(horizontalInput, verticalInput);
+        movement.Normalize(); // Normalizacja wektora ruchu
+        rb.velocity = movement * speed;
+        animator.SetFloat("xVelocity", Math.Abs(rb.velocity.x));
+        animator.SetFloat("yVelocity", Math.Abs(rb.velocity.y));
+    }
+
+    void Flip()
+    {
+        facingRight = !facingRight;
+        transform.Rotate(0, 180, 0);
     }
 }
